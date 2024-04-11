@@ -25,11 +25,5 @@ COPY --from=builder /build/python /opt/python
 # Copy function code
 COPY agent-executor-lambda ${LAMBDA_TASK_ROOT}
 
-# Create a non-root user
-# RUN adduser --disabled-password --no-create-home appuser
-
-# # Switch to the non-root user
-# USER appuser
-
 # Set the CMD to your handler (could also be done as a parameter override outside of the Dockerfile)
 CMD [ "handler.lambda_handler" ]
