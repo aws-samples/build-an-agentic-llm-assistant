@@ -17,7 +17,7 @@ Throughout these labs, you will be using and extending the CDK stack of the **Se
 ## Prerequisites
 
 1. [Create an AWS Cloud9 environment](https://docs.aws.amazon.com/cloud9/latest/user-guide/tutorial-create-environment.html) to use as an IDE.
-2. Configure [model access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html) on Amazon Bedrock console, namely to access Amazon Titan and Anthropic Claude models.
+2. Configure [model access](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html) on Amazon Bedrock console, namely to access Amazon Titan and Anthropic Claude models on `us-west-2 (Oregon)`.
 3. Setup an Amazon SageMaker Studio environment, using the [Quick setup for single users](https://docs.aws.amazon.com/sagemaker/latest/dg/onboard-quick-start.html#onboard-quick-start-instructions), to run the data-pipelines notebooks.
 
 ## Architecture
