@@ -6,15 +6,19 @@ It complements the [Amazon Bedrock Workshop](https://github.com/aws-samples/amaz
 Within the labs of this workshop, you'll explore some of the most common and advanced LLM applications design patterns used by customers to improve business operations with Generative AI.
 Namely, these labs together help you build step by step a complex Agentic LLM assistant capable of answering retrieval and analytical questions on your internal knowledge bases.
 
-* lab_01: Explore IaC with AWS CDK to streamline building LLM applications on AWS
-* lab_02: Build a basic serverless LLM assistant with AWS Lambda and Amazon Bedrock
-* lab_03: Refactor the LLM assistant in AWS Lambda into a custom LLM agent with basic tools
-* lab_04: Extend the LLM agent with semantic retrieval from internal knowledge bases
-* lab_05: Extend the LLM agent with the ability to query a SQL database
-
-<!--* lab_6: Front end application-->
+* Lab 1: Explore IaC with AWS CDK to streamline building LLM applications on AWS
+* Lab 2: Build a basic serverless LLM assistant with AWS Lambda and Amazon Bedrock
+* Lab 3: Refactor the LLM assistant in AWS Lambda into a custom LLM agent with basic tools
+* Lab 4: Extend the LLM agent with semantic retrieval from internal knowledge bases
+* Lab 5: Extend the LLM agent with the ability to query a SQL database
 
 Throughout these labs, you will be using and extending the CDK stack of the **Serverless LLM Assistant** available under the folder `serverless_llm_assistant`.
+
+## Prerequisites
+
+1. [Create an AWS Cloud9 environment](https://docs.aws.amazon.com/cloud9/latest/user-guide/tutorial-create-environment.html) to use as an IDE.
+2. Configure [*model access*](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html) on Amazon Bedrock console, namely to access Amazon Titan and Anthropic Claude models.
+3. Setup an Amazon SageMaker Studio environment, using the [*Quick setup for single users*](https://docs.aws.amazon.com/sagemaker/latest/dg/onboard-quick-start.html#onboard-quick-start-instructions), to run the data-pipelines notebooks.
 
 ## Architecture
 
