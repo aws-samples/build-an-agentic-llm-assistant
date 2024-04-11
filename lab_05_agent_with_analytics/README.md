@@ -15,7 +15,7 @@ and finally integrating the results with the agent to answer analytical question
 
 Throughout this lab, you will focus on the resources highlighted in red below, namely updating the LLM agent in AWS Lambda function and ingesting a SQL table into the database.
 
-![Agentic Assistant workshop Architecture](assets/agentic-assistant-workshop-architecture-lab-05.png)
+![Agentic Assistant workshop Architecture](/assets/agentic-assistant-workshop-architecture-lab-05.png)
 
 #### Step 1: Load a SQL table to the PostgreSQL DB
 

@@ -20,7 +20,7 @@ Throughout these labs, you will be using and extending the CDK stack of the **Se
 
 The following diagram illustrates the target architecture of this workshop:
 
-![Agentic Assistant workshop Architecture](assets/agentic-assistant-workshop-architecture.png)
+![Agentic Assistant workshop Architecture](/assets/agentic-assistant-workshop-architecture.png)
 
 ## Next step
 

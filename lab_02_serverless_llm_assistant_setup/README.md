@@ -31,7 +31,7 @@ Follow the instructions below to complete the lab.
 5. Deploy the CDK stack by running `npx cdk deploy`.
 6. Observe and explore the installed resources through the AWS CloudFormation console.
 
-![Agentic Assistant workshop Architecture](assets/agentic-assistant-workshop-architecture-lab-02.png)
+![Agentic Assistant workshop Architecture](/assets/agentic-assistant-workshop-architecture-lab-02.png)
 
 #### Step 2: Deploy the frontend for the LLM assistant
 

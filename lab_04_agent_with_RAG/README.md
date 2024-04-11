@@ -23,7 +23,7 @@ In order to extend the agent with the RAG design pattern, we need to:
 
 Throughout this lab, you will focus on the resources highlighted in red below, namely adding Amazon Aurora PostgreSQL as the vector search database and ingesting the documents into it.
 
-![Agentic Assistant workshop Architecture](assets/agentic-assistant-workshop-architecture-lab-04.png)
+![Agentic Assistant workshop Architecture](/assets/agentic-assistant-workshop-architecture-lab-04.png)
 
 
 #### Step 1: Understand the different options for creating a vector search db

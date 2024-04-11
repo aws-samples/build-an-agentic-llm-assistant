@@ -23,7 +23,7 @@ To achieve this, you will perform the following steps:
 
 Throughout this lab, you will focus on the resources highlighted in red below, namely the Lambda function which serves as the orchestrator of the LLM assistant.
 
-![Agentic Assistant workshop Architecture](assets/agentic-assistant-workshop-architecture-lab-03.png)
+![Agentic Assistant workshop Architecture](/assets/agentic-assistant-workshop-architecture-lab-03.png)
 
 #### Step 1: List and discuss agent components
 
