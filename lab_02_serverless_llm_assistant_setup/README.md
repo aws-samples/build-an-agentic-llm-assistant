@@ -42,7 +42,7 @@ as suggested in step 3 below. If you want to install the frontend, continue with
 2. Install the required dependencies by running `npm install`.
 4. Deploy the frontend CI/CD to AWS Amplify by running `npx cdk deploy`.
 5. Go to AWS Amplify [console](https://console.aws.amazon.com/amplify/home) and trigger a build for the app `AmplifyChatUI`.
-![trigger the app build on the Amplify console](assets/trigger-a-build-of-amplify-app.png)
+![trigger the app build on the Amplify console](/assets/trigger-a-build-of-amplify-app.png)
 6. Access the deployed frontend using the hosting URL.
 
 #### Step 3: Interact with the LLM assistant
@@ -52,7 +52,7 @@ Now, you can interact with the assistant through a Web UI as follows:
 1. Access the deployed frontend and authenticate using Cognito.
 2. Interact with the LLM assistant through the UI, using the `basic` assistant mode.
 
-![a demonstration of the chat ui](assets/assistant-ui-demo.png)
+![a demonstration of the chat ui](/assets/assistant-ui-demo.png)
 
 Or by calling the Lambda function directly as follows:
 
