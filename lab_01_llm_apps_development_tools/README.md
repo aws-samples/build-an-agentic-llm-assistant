@@ -29,11 +29,16 @@ enabling them to build and deploy LLM-powered applications at scale while adheri
 
 * Task 1: Create an S3 bucket manully through the AWS console.
     * Follow the instructor instruction, or the documentation at [Step 1: Create your first S3 bucket](https://docs.aws.amazon.com/AmazonS3/latest/userguide/creating-bucket.html)
-* Task 2: Create an S3 bucket using AWS CloudFormation
-    * use the cloudformation in `lab1.1_cloudformation_s3.yaml`.
-    * Follow the instructor's demo.
-* Task 3: Create an S3 bucket using CDK
-    * use the cdk stack within the folder `lab1.2_s3_cdk`
-    * Follow the instructor's demo.
-    * Make sure to destroy the stack after the exercise is finished using `cdk destroy`
+* Task 2: Create an S3 bucket using AWS CloudFormation through the console
+    * Use the cloudformation in `lab1.1_cloudformation_s3.yaml`.
+    * Follow the instructor's demo, or the documentation on [Creating a stack on the AWS CloudFormation console](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/cfn-console-create-stack.html)
+    * Make sure to delete the stack through the console after you finish this exercise.
+* Task 3: Create an S3 bucket using AWS CDK
+    * Use the CDK stack within the folder `lab1.2_s3_cdk` and follow the insturctions below:
+        1. Go into the stack's folder `cd lab1.2_s3_cdk`.
+        2. Run `npm clean-install` to install the stack's dependencies.
+        3. Run `npx cdk bootstrap` to setup CDK on your account. This only needs to happen once per AWS account and region combination.
+        4. Then install the stack using `npx cdk deploy`
+    * One the Stack deployment is finished, check the newly created bucket on Amazon S3.
+    * Make sure to destroy the stack after the exercise is finished using `npx cdk destroy`
 * Task 4: call to action - reflect on the benefit of using Infrastructure as Code.
