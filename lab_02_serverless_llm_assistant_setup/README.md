@@ -54,10 +54,11 @@ Now, you can interact with the assistant through a Web UI as follows:
 
 ![a demonstration of the chat ui](/assets/assistant-ui-demo.png)
 
-Or by calling the Lambda function directly as follows:
+Or by calling the Lambda function directly:
 
-3. Using boto3 with the python script `invoke_assistant_lambda.py` as follows: `python3 invoke_assistant_lambda.py`. You can edit the `user_input` in the script to ask a different question.
-4. Alternatively, you can call the Lambda function through the [AWS Lambda console](https://console.aws.amazon.com/lambda/home) by passing the following as input.
+1. First install boto3 by running `pip install boto3` in Cloud9 terminal.
+3. Then, using boto3 with the python script `invoke_assistant_lambda.py` you can call the lambda as follows: `python3 invoke_assistant_lambda.py`. You can edit the `user_input` in the script to ask a different question.
+4. Alternatively, you can interact the Lambda function through the [AWS Lambda console](https://console.aws.amazon.com/lambda/home) by passing the following as input.
 ```json
 {
     "session_id": 10,
@@ -67,4 +68,4 @@ Or by calling the Lambda function directly as follows:
 ```
 
 At this stage the LLM could only answer questions based on its training data.
-Therefore, it can assist you in understanding concepts such as with the question `Could you explain the transformer model?`
+For instance, it can assist you in understanding concepts such as the transformer model with the question `Could you explain the transformer model?`
