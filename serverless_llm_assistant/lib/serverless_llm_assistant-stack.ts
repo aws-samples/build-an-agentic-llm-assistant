@@ -140,7 +140,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     );
 
     //------------------------------------------------------------------------
-    // Create an S3 bucket to store the vector embeddings and SQL data
+    // Create an S3 bucket for intermediate data staging
     // and allow SageMaker to read and write to it.
     const agent_data_bucket = new s3.Bucket(this, "AgentDataBucket", {
       // Warning, swith DESTROY to RETAIN to avoid accidental deletion
