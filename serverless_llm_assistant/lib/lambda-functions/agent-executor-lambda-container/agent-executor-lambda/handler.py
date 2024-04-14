@@ -9,6 +9,7 @@ from langchain_community.chat_message_histories import DynamoDBChatMessageHistor
 
 from assistant.config import AgenticAssistantConfig
 from assistant.prompts import CLAUDE_PROMPT
+## placeholder for lab 3, step 4.2, replace this with imports as instructed
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
