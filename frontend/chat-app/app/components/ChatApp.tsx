@@ -59,6 +59,7 @@ const ChatApp: React.FC = () => {
           .then(response => response.json())
           .then(responseData => {
             // Add the response to the messages state after receiving it
+            setCleanHistory(false);
             let AIMessage: Message;
             if (responseData.errorMessage && debugMode) {
               AIMessage = {
