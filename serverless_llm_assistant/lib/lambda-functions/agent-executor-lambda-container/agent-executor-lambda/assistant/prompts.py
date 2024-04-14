@@ -31,3 +31,6 @@ Assistant:
 CLAUDE_PROMPT = PromptTemplate(
     input_variables=["history", "input"], template=_CALUDE_PROMPT_TEMPLATE
 )
+
+## Placeholder for lab 2 - agent prompt code
+## replace this placeholder with code from lab 2, step 2 as instructed.

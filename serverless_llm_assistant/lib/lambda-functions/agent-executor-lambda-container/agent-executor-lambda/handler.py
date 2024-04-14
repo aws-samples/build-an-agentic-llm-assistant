@@ -60,7 +60,7 @@ def lambda_handler(event, context):
         conversation_chain = get_basic_chatbot_conversation_chain(
             user_input, session_id, clean_history
         ).predict
-    if chatbot_type == "agentic":
+    elif chatbot_type == "agentic":
         return {
             "statusCode": 200,
             "response": (
