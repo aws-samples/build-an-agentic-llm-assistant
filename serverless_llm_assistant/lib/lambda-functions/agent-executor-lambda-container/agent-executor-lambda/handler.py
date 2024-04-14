@@ -38,10 +38,6 @@ def get_basic_chatbot_conversation_chain(
     memory = ConversationBufferMemory(
         memory_key="history",
         chat_memory=message_history,
-        ai_prefix="AI",
-        # Change the human_prefix from Human to something else
-        # to not conflict with Human keyword in Anthropic Claude model.
-        human_prefix="Hu",
         return_messages=False,
     )
 
@@ -64,6 +60,14 @@ def lambda_handler(event, context):
         conversation_chain = get_basic_chatbot_conversation_chain(
             user_input, session_id, clean_history
         ).predict
+    if chatbot_type == "agentic":
+        return {
+            "statusCode": 200,
+            "response": (
+                f"The agentic mode is not supported yet. Extend the code as instructed"
+                " in lab 3 to add it."
+            ),
+        }
     else:
         return {
             "statusCode": 200,

@@ -6,23 +6,27 @@ from langchain.prompts.prompt import PromptTemplate
 # ============================================================================
 
 date_today = str(datetime.today().date())
+
 _CALUDE_PROMPT_TEMPLATE = f"""
-\nHuman: The following is a friendly conversation between a human and an AI assistant.
-The assistant is polite, helpful, and accurately replies to input messages or questions.
 
-The previous conversation is available within the <conversation_history> XML tags below.
-In the history Hu refers to the human and AI refers to the assistant.
-You can refer to this history to answer questions but do not share it with the user.
+Human: The following is a friendly conversation between a human and an AI.
+The AI answers politely and accurately and provides specific details from its context when it's relevant.
+If the AI does not know the answer to a question, it truthfully says it does not know.
 
+The date today is {date_today}.
+
+Current conversation:
 <conversation_history>
 {{history}}
 </conversation_history>
 
-The date today is {date_today}.
+Here is the human's next reply:
+<human_reply>
+{{input}}
+</human_reply>
 
-The current user input is the following: {{input}}
-
-Assistant:"""
+Assistant:
+"""
 
 CLAUDE_PROMPT = PromptTemplate(
     input_variables=["history", "input"], template=_CALUDE_PROMPT_TEMPLATE
