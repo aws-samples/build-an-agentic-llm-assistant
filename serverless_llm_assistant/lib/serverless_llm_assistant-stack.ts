@@ -119,6 +119,8 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
       }
     );
 
+    // Placeholder Step 2.4 - grant Lambda permission to access db credentials
+
     // Allow Lambda to read SSM parameters.
     ssm_bedrock_region_parameter.grantRead(agent_executor_lambda);
     ssm_llm_model_id_parameter.grantRead(agent_executor_lambda);
