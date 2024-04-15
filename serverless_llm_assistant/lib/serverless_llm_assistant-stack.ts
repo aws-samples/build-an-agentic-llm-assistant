@@ -109,6 +109,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
         description: "Lambda function with bedrock access created via CDK",
         timeout: cdk.Duration.minutes(5),
         memorySize: 2048,
+        // vpc: vpc.vpc,
         environment: {
           BEDROCK_REGION_PARAMETER: ssm_bedrock_region_parameter.parameterName,
           LLM_MODEL_ID_PARAMETER: ssm_llm_model_id_parameter.parameterName,
