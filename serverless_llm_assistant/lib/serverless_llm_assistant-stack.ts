@@ -113,7 +113,8 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
         environment: {
           BEDROCK_REGION_PARAMETER: ssm_bedrock_region_parameter.parameterName,
           LLM_MODEL_ID_PARAMETER: ssm_llm_model_id_parameter.parameterName,
-          CHAT_MESSAGE_HISTORY_TABLE: ChatMessageHistoryTable.tableName
+          CHAT_MESSAGE_HISTORY_TABLE: ChatMessageHistoryTable.tableName,
+          // AGENT_DB_SECRET_ID: AgentDB.secret?.secretArn as string
         },
       }
     );
