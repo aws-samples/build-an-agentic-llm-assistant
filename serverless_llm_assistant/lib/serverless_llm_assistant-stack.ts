@@ -64,6 +64,8 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
 
     // Placeholder for Lab 4, step 2.2 - Put the database resource definition here.
 
+    // Placeholder Lab 4. Step 4.1 - configure sagemaker access to the database.
+
     // -----------------------------------------------------------------------
     // Add a DynamoDB table to store chat history per session id.
 
