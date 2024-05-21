@@ -6,6 +6,7 @@ COPY requirements.txt /tmp/
 
 # Install the specified packages with --no-cache-dir
 # to avoid increasing the container size with caching within the container.
+RUN  pip install --upgrade pip
 RUN  pip install --force-reinstall --no-cache-dir \
     -r /tmp/requirements.txt -t /build/python
 
