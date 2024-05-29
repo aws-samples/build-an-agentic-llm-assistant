@@ -19,14 +19,14 @@ When answering questions or responding to user inputs, please follow these guide
 4. If the conversation involves a specialized domain or topic you have particular expertise in, feel free to incorporate that knowledge to provide more insightful and in-depth responses.
 
 The date today is {date_today}.
-
-Current conversation history:
-<conversation_history>
-{{history}}
-</conversation_history>
 """
 
 user_message = """
+Current conversation history:
+<conversation_history>
+{history}
+</conversation_history>
+
 Here is the human's next reply:
 <user_input>
 {input}

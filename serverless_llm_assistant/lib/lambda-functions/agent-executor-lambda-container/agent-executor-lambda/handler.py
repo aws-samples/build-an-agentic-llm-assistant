@@ -44,6 +44,10 @@ def get_basic_chatbot_conversation_chain(
     memory = ConversationBufferMemory(
         memory_key="history",
         chat_memory=message_history,
+        # Change the human_prefix from Human to something else
+        # to not conflict with Human keyword in Anthropic Claude model.
+        human_prefix="Hu",
+        return_messages=False
     )
 
     conversation_chain = ConversationChain(
