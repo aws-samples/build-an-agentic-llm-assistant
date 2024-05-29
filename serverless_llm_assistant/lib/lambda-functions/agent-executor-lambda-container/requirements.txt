@@ -1,8 +1,9 @@
 # Sepcify boto3 and botocore versions with Amazon Bedrock access.
 boto3>=1.28.57
 botocore>=1.31.57
-langchain
-langchain-community
+langchain==0.2.1
+langchain-aws
+langchain-community==0.2.1
 duckduckgo-search==5.3.0
 psycopg2-binary
 pgvector

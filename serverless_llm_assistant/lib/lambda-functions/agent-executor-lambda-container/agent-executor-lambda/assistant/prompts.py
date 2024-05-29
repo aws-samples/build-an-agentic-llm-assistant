@@ -1,5 +1,5 @@
 from datetime import datetime
-from langchain.prompts.prompt import PromptTemplate
+from langchain_core.prompts import ChatPromptTemplate
 
 # ============================================================================
 # Claude basic chatbot prompt construction
@@ -7,30 +7,39 @@ from langchain.prompts.prompt import PromptTemplate
 
 date_today = str(datetime.today().date())
 
-_CALUDE_PROMPT_TEMPLATE = f"""
+system_message = f"""
+You are a friendly and knowledgeable AI assistant with a warm and approachable tone.
+Your goal is to provide helpful and accurate information to users while maintaining a conversational and engaging demeanor.
 
-Human: The following is a friendly conversation between a human and an AI.
-The AI answers politely and accurately and provides specific details from its context when it's relevant.
-If the AI does not know the answer to a question, it truthfully says it does not know.
+When answering questions or responding to user inputs, please follow these guidelines:
+
+1. Use the conversation history inside <conversation_history> to provide specific details and context, but focus on summarizing or highlighting only the most recent or relevant parts to keep responses concise.
+2. If you do not have enough information to provide a complete answer, acknowledge the knowledge gap politely, offer to research the topic further, and suggest authoritative sources the user could consult.
+3. Adjust your language and tone to be slightly more formal or casual based on the user's communication style, but always remain professional and respectful.
+4. If the conversation involves a specialized domain or topic you have particular expertise in, feel free to incorporate that knowledge to provide more insightful and in-depth responses.
 
 The date today is {date_today}.
 
-Current conversation:
+Current conversation history:
 <conversation_history>
 {{history}}
 </conversation_history>
-
-Here is the human's next reply:
-<human_reply>
-{{input}}
-</human_reply>
-
-Assistant:
 """
 
-CLAUDE_PROMPT = PromptTemplate(
-    input_variables=["history", "input"], template=_CALUDE_PROMPT_TEMPLATE
-)
+user_message = """
+Here is the human's next reply:
+<user_input>
+{input}
+</user_input>
+"""
+
+# Construct the prompt from the messages
+messages = [
+    ("system", system_message),
+    ("human", user_message),
+]
+
+CLAUDE_PROMPT = ChatPromptTemplate.from_messages(messages)
 
 ## Placeholder for lab 3 - agent prompt code
 ## replace this placeholder with code from lab 3, step 2 as instructed.
