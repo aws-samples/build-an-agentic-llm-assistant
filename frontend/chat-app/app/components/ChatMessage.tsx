@@ -17,7 +17,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ content, isUser }) => {
       <div className="flex items-start space-x-2">
         <div className="w-10 h-10"></div>
           <div className="bg-gray-100 p-3 rounded-lg shadow-sm flex-grow">
-            <div className="text-gray-600"><Markdown>{content}</Markdown></div>
+            <div className="text-gray-600 break-words text-wrap">
+              <Markdown>{content}</Markdown>
+            </div>
           </div>
         <div
           className={`w-10 h-10 flex-shrink-0 flex items-center justify-center ${bgColor} rounded-full text-white`}
@@ -33,7 +35,9 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ content, isUser }) => {
           {initials}
         </div>
         <div className="bg-white p-3 rounded-lg shadow-sm flex-grow">
-          <div className="text-gray-600"><Markdown>{content}</Markdown></div>
+          <div className="text-gray-600 break-words text-wrap">
+            <Markdown>{content}</Markdown>
+          </div>
         </div>
         <div className="w-10 h-10"></div>
       </div>
