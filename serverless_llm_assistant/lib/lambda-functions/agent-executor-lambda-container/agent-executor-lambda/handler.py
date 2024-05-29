@@ -10,6 +10,7 @@ from langchain_community.chat_message_histories import DynamoDBChatMessageHistor
 
 from assistant.config import AgenticAssistantConfig
 from assistant.prompts import CLAUDE_PROMPT
+from assistant.utils import parse_markdown_content
 ## placeholder for lab 3, step 4.2, replace this with imports as instructed
 
 logger = logging.getLogger()
@@ -91,6 +92,7 @@ def lambda_handler(event, context):
 
     try:
         response = conversation_chain(input=user_input)
+        response = parse_markdown_content(response)
     except Exception:
         response = (
             "Unable to respond due to an internal issue." " Please try again later"
