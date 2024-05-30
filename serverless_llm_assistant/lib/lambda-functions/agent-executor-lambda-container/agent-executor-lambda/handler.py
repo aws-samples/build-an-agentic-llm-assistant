@@ -3,7 +3,7 @@ import traceback
 
 import boto3
 from langchain.chains import ConversationChain
-from langchain.llms.bedrock import Bedrock
+from langchain_aws import BedrockLLM
 from langchain_aws import ChatBedrock
 from langchain.memory import ConversationBufferMemory
 from langchain_community.chat_message_histories import DynamoDBChatMessageHistory
@@ -21,8 +21,21 @@ config = AgenticAssistantConfig()
 
 bedrock_runtime = boto3.client("bedrock-runtime", region_name=config.bedrock_region)
 
-claude_llm = ChatBedrock(
+claude_llm = BedrockLLM(
     model_id=config.llm_model_id,
+    client=bedrock_runtime,
+    model_kwargs={
+        "max_tokens": 1000,
+        "temperature": 0.0,
+        "top_p": 0.99
+    },
+)
+
+
+claude_chat_llm = ChatBedrock(
+    # model_id=config.llm_model_id,
+    # transitioning to claude 3 with messages API
+    model_id="anthropic.claude-3-haiku-20240307-v1:0",
     client=bedrock_runtime,
     model_kwargs={
         "max_tokens": 1000,
@@ -52,7 +65,7 @@ def get_basic_chatbot_conversation_chain(
     )
 
     conversation_chain = ConversationChain(
-        prompt=CLAUDE_PROMPT, llm=claude_llm, verbose=verbose, memory=memory
+        prompt=CLAUDE_PROMPT, llm=claude_chat_llm, verbose=verbose, memory=memory
     )
 
     return conversation_chain
