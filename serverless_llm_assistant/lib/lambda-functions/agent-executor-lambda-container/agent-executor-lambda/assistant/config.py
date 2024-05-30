@@ -13,7 +13,6 @@ secretsmanager_client = boto3.client("secretsmanager")
 # TODO: put in parameter store and read with a default factory in the dataclass
 SQL_TABLE_NAMES = ["extracted_entities"]
 
-
 @dataclass
 class AgenticAssistantConfig:
     bedrock_region: str = ssm.get_parameter(
@@ -57,8 +56,20 @@ class AgenticAssistantConfig:
         num_sql_table_sample_rows: int = 2
 
         sql_engine = sqlalchemy.create_engine(sqlalchemy_connection_url)
-        entities_db = SQLDatabase(
-            engine=sql_engine,
-            include_tables=SQL_TABLE_NAMES,
-            sample_rows_in_table_info=num_sql_table_sample_rows,
-        )
+
+        try:
+            entities_db = SQLDatabase(
+                engine=sql_engine,
+                include_tables=SQL_TABLE_NAMES,
+                sample_rows_in_table_info=num_sql_table_sample_rows,
+            )
+        except ValueError as e:
+            if "include_tables" in str(e):
+                print(f"Warning: Table {SQL_TABLE_NAMES[0]} not found in the database. Proceeding without including this table.")
+                entities_db = SQLDatabase(
+                    engine=sql_engine,
+                    include_tables=[],  # Include all tables
+                    sample_rows_in_table_info=num_sql_table_sample_rows,
+                )
+            else:
+                raise e
