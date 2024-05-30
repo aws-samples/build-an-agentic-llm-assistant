@@ -1,5 +1,5 @@
 # stage 1: build the lambda layer
-FROM --platform=linux/x86_64 public.ecr.aws/lambda/python:3.9 AS builder
+FROM --platform=linux/x86_64 public.ecr.aws/lambda/python:3.12 AS builder
 
 # Copy requirements.txt
 COPY requirements.txt /tmp/
@@ -11,13 +11,13 @@ RUN  pip install --force-reinstall --no-cache-dir \
     -r /tmp/requirements.txt -t /build/python
 
 # Install 'zip' utility (Amazon Linux uses yum)
-RUN yum install -y zip
+RUN dnf install -y zip
 
 # Create the ZIP file for the Lambda layer
 RUN cd /build/python && zip -r /opt/bedrock_layer.zip .
 
 # Stage 2: Build the Lambda function
-FROM --platform=linux/x86_64 public.ecr.aws/lambda/python:3.9
+FROM --platform=linux/x86_64 public.ecr.aws/lambda/python:3.12
 
 # Copy the Lambda layer artifacts from the builder stage
 COPY --from=builder /opt/bedrock_layer.zip /opt/
