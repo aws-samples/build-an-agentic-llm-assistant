@@ -31,7 +31,6 @@ claude_llm = BedrockLLM(
     },
 )
 
-
 claude_chat_llm = ChatBedrock(
     # model_id=config.llm_model_id,
     # transitioning to claude 3 with messages API
