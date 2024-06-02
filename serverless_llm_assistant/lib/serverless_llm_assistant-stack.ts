@@ -11,7 +11,9 @@ import * as s3 from "aws-cdk-lib/aws-s3";
 import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as apigateway from "aws-cdk-lib/aws-apigateway";
 
-import { Vpc } from "./vpc-stack";
+import { Vpc } from "./assistant-vpc";
+import { AssistantApiConstruct } from './assistant-api-gateway';
+import { CognitoConstruct } from './assistant-authorizer';
 
 const AGENT_DB_NAME = "AgentSQLDBandVectorStore";
 
@@ -210,90 +212,15 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     );
 
     // -----------------------------------------------------------------------
-    // Create a new Cognito user pool
-    // documentation: https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_cognito.UserPool.html
-    const cognito_user_pool = new cognito.UserPool(this, "CognitoPool", {
-      autoVerify: { email: true },
-      removalPolicy: cdk.RemovalPolicy.DESTROY,
-      selfSignUpEnabled: true,
-      signInCaseSensitive: false,
-      signInAliases: {
-        email: true,
-        username: true
-      },
-      standardAttributes: {
-        email: {
-          required: true,
-          mutable: false
-        }
-      }
-    });
+    // Create a new Cognito user pool and add an app client to the user pool
 
-    // Add an app client to the user pool
-    const pool_client = cognito_user_pool.addClient(
-      "NextJsAppClient",
-      {
-        oAuth: {
-          flows: {
-            authorizationCodeGrant: true,
-          },
-          scopes: [cognito.OAuthScope.OPENID],
-          callbackUrls: ["https://localhost:3000/"],
-          logoutUrls: ["https://localhost:3000/"],
-        },
-      },
-    );
-
+    const cognito_authorizer = new CognitoConstruct(this, 'Cognito');
     // -------------------------------------------------------------------------
     // Add an Amazon API Gateway with AWS cognito auth and an AWS lambda as a backend
-
-    const agent_api = new apigateway.RestApi(this, "AssistantApi", {
-      restApiName: "assistant-api",
-      description:
-        "An API to invoke an LLM based agent which orchestrates using tools to answer user input questions.",
-      defaultCorsPreflightOptions: {
-        allowOrigins: apigateway.Cors.ALL_ORIGINS, // Change this to the specific origin of your app in production
-        allowMethods: apigateway.Cors.ALL_METHODS,
-        allowHeaders: ['Content-Type', 'Authorization']
-      }
+    const agentApi = new AssistantApiConstruct(this, 'AgentApi', {
+      cognitoUserPool: cognito_authorizer.userPool,
+      lambdaFunction: agent_executor_lambda,
     });
-
-    // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_apigateway.CognitoUserPoolsAuthorizer.html
-    const cognito_authorizer = new apigateway.CognitoUserPoolsAuthorizer(this, 'ChatAuthorizer', {
-      cognitoUserPools: [cognito_user_pool]
-    });
-
-    const agent_lambda_integration = new apigateway.LambdaIntegration(agent_executor_lambda, {
-      proxy: false, // Set this to false to integrate with Lambda function directly
-      integrationResponses: [{
-        statusCode: '200',
-        // Enable CORS for the Lambda Integration
-        responseParameters: {
-          'method.response.header.Access-Control-Allow-Headers': "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'",
-          'method.response.header.Access-Control-Allow-Origin': "'*'",
-          'method.response.header.Access-Control-Allow-Methods': "'POST,OPTIONS'",
-        },
-      }]
-    });
-
-    agent_api.root.addMethod(
-      "POST",
-      agent_lambda_integration,
-      {
-        // Enable CORS for the API
-        methodResponses: [{
-          statusCode: '200',
-          responseParameters: {
-            'method.response.header.Access-Control-Allow-Headers': true,
-            'method.response.header.Access-Control-Allow-Origin': true,
-            'method.response.header.Access-Control-Allow-Methods': true,
-          },
-        }],
-        authorizer: cognito_authorizer,
-        authorizationType: apigateway.AuthorizationType.COGNITO
-      }
-    );
-
     // -----------------------------------------------------------------------
     // Add an SSM parameter to hold the cognito user pool id
     const cognito_user_pool_id_parameter = new ssm.StringParameter(
@@ -301,7 +228,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
       "cognitoUserPoolParameter",
       {
         parameterName: "/AgenticLLMAssistantWorkshop/cognito_user_pool_id",
-        stringValue: cognito_user_pool.userPoolId,
+        stringValue: cognito_authorizer.userPool.userPoolId,
       }
     );
 
@@ -311,7 +238,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
       "cognitoUserPoolClientParameter",
       {
         parameterName: "/AgenticLLMAssistantWorkshop/cognito_user_pool_client_id",
-        stringValue: pool_client.userPoolClientId,
+        stringValue: cognito_authorizer.userPoolClient.userPoolClientId,
       }
     );
 
@@ -321,7 +248,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
       "AgentAPIURLParameter",
       {
         parameterName: "/AgenticLLMAssistantWorkshop/agent_api",
-        stringValue: agent_api.url
+        stringValue: agentApi.api.url
       }
     );
 
@@ -334,19 +261,19 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
 
     // Output the clientID
     new cdk.CfnOutput(this, "UserPoolClient", {
-      value: pool_client.userPoolClientId,
+      value: cognito_authorizer.userPoolClient.userPoolClientId,
     });
 
     new cdk.CfnOutput(this, "UserPoolId", {
-      value: cognito_user_pool.userPoolId
+      value: cognito_authorizer.userPool.userPoolId
     });
 
     new cdk.CfnOutput(this, "UserPoolProviderURL", {
-      value: cognito_user_pool.userPoolProviderUrl
+      value: cognito_authorizer.userPool.userPoolProviderUrl
     });
 
     new cdk.CfnOutput(this, "EndpointURL", {
-      value: agent_api.url
+      value: agentApi.api.url
     });
 
   }
