@@ -11,6 +11,7 @@
     "cdk": "cdk"
   },
   "devDependencies": {
+    "@tailwindcss/typography": "^0.5.13",
     "@types/jest": "^29.5.11",
     "@types/node": "20.10.4",
     "aws-cdk": "2.115.0",

@@ -18,7 +18,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ content, isUser }) => {
         <div className="w-10 h-10"></div>
           <div className="bg-gray-100 p-3 rounded-lg shadow-sm flex-grow">
             <div className="text-gray-600 break-words text-wrap">
-              <Markdown>{content}</Markdown>
+              <Markdown className="prose">{content}</Markdown>
             </div>
           </div>
         <div
@@ -36,7 +36,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({ content, isUser }) => {
         </div>
         <div className="bg-white p-3 rounded-lg shadow-sm flex-grow">
           <div className="text-gray-600 break-words text-wrap">
-            <Markdown>{content}</Markdown>
+            <Markdown className="prose">{content}</Markdown>
           </div>
         </div>
         <div className="w-10 h-10"></div>
