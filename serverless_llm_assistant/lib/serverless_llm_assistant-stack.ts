@@ -8,12 +8,12 @@ import * as path from "path";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import * as s3 from "aws-cdk-lib/aws-s3";
-import * as cognito from 'aws-cdk-lib/aws-cognito';
-import * as apigateway from "aws-cdk-lib/aws-apigateway";
 
 import { Vpc } from "./assistant-vpc";
 import { AssistantApiConstruct } from './assistant-api-gateway';
 import { CognitoConstruct } from './assistant-authorizer';
+import { SageMakerRdsAccessConstruct } from './assistant-sagemaker-postgres-acess';
+import { SageMakerIAMPolicyConstruct } from './assistant-sagemaker-iam-policy';
 
 const AGENT_DB_NAME = "AgentSQLDBandVectorStore";
 
@@ -63,9 +63,18 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
       }
     );
 
+    // -----------------------------------------------------------------------
     // Placeholder for Lab 4, step 2.2 - Put the database resource definition here.
 
-    // Placeholder Lab 4. Step 4.1 - configure sagemaker access to the database.
+    // -----------------------------------------------------------------------
+    // Lab 4. Step 4.1 - configure sagemaker access to the database.
+    // Create a security group to allow access to the DB from a SageMaker processing job
+    // which will be used to index embedding vectors.
+
+    // const sagemaker_rds_access = new SageMakerRdsAccessConstruct(this, 'SageMakerRdsAccess', {
+    //   vpc: vpc.vpc,
+    //   rdsCluster: AgentDB,
+    // });
 
     // -----------------------------------------------------------------------
     // Add a DynamoDB table to store chat history per session id.
@@ -160,7 +169,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
 
     // Save the bucket name as an SSM parameter to simplify using it in
     // SageMaker processing jobs without having to copy the name manually.
-    const agentDataBucketParameter = new ssm.StringParameter(
+    new ssm.StringParameter(
       this,
       "AgentDataBucketParameter",
       {
@@ -172,44 +181,15 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     // -----------------------------------------------------------------------
     // Create a managed IAM policy to be attached to a SageMaker execution role
     // to allow the required permissions to retrieve the information to access the database.
-    const SageMakerPostgresDBAccessIAMPolicy = new iam.ManagedPolicy(
-      this,
-      "sageMakerPostgresDBAccessIAMPolicy",
-      {
-        statements: [
-          new iam.PolicyStatement({
-            actions: ["ssm:GetParameter"],
-            resources: [
-              ssm_bedrock_region_parameter.parameterArn,
-              ssm_llm_model_id_parameter.parameterArn,
-              agentLambdaNameParameter.parameterArn,
-              agentDataBucketParameter.parameterArn,
-            ],
-          }),
-          new iam.PolicyStatement({
-            // add permission to read and write to the data bucket
-            actions: [
-              "s3:GetObject",
-              "s3:PutObject",
-              "s3:DeleteObject",
-              "s3:ListBucket",
-            ],
-            resources: [
-              // Add permission to get only the data bucket
-              agent_data_bucket.bucketArn,
-              agent_data_bucket.arnForObjects("*"),
-            ],
-          }),
-          new iam.PolicyStatement({
-            // add permission to invoke the agent executor lambda function.
-            actions: ["lambda:InvokeFunction"],
-            resources: [
-              agent_executor_lambda.functionArn,
-            ]
-          }),
-        ],
-      }
-    );
+    // new SageMakerIAMPolicyConstruct(this, 'SageMakerIAMPolicy', {
+    //   bedrockRegionParameter: ssm_bedrock_region_parameter,
+    //   llmModelIdParameter: ssm_llm_model_id_parameter,
+    //   agentLambdaNameParameter: agentLambdaNameParameter,
+    //   agentDataBucket: agent_data_bucket,
+    //   agentExecutorLambda: agent_executor_lambda,
+    //   rdsCluster: AgentDB,
+    //   sagemaker_rds_access: sagemaker_rds_access,
+    // });
 
     // -----------------------------------------------------------------------
     // Create a new Cognito user pool and add an app client to the user pool
@@ -217,63 +197,9 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     const cognito_authorizer = new CognitoConstruct(this, 'Cognito');
     // -------------------------------------------------------------------------
     // Add an Amazon API Gateway with AWS cognito auth and an AWS lambda as a backend
-    const agentApi = new AssistantApiConstruct(this, 'AgentApi', {
+    new AssistantApiConstruct(this, 'AgentApi', {
       cognitoUserPool: cognito_authorizer.userPool,
       lambdaFunction: agent_executor_lambda,
-    });
-    // -----------------------------------------------------------------------
-    // Add an SSM parameter to hold the cognito user pool id
-    const cognito_user_pool_id_parameter = new ssm.StringParameter(
-      this,
-      "cognitoUserPoolParameter",
-      {
-        parameterName: "/AgenticLLMAssistantWorkshop/cognito_user_pool_id",
-        stringValue: cognito_authorizer.userPool.userPoolId,
-      }
-    );
-
-    // Add an SSM parameter to hold the cognito user pool id
-    const cognito_user_pool_client_id_parameter = new ssm.StringParameter(
-      this,
-      "cognitoUserPoolClientParameter",
-      {
-        parameterName: "/AgenticLLMAssistantWorkshop/cognito_user_pool_client_id",
-        stringValue: cognito_authorizer.userPoolClient.userPoolClientId,
-      }
-    );
-
-    // Add an SSM parameter to hold Rest API URL
-    const agent_api_parameter = new ssm.StringParameter(
-      this,
-      "AgentAPIURLParameter",
-      {
-        parameterName: "/AgenticLLMAssistantWorkshop/agent_api",
-        stringValue: agentApi.api.url
-      }
-    );
-
-    // -----------------------------------------------------------------------
-    // stack outputs
-
-    new cdk.CfnOutput(this, "sageMakerPostgresDBAccessIAMPolicyARN", {
-      value: SageMakerPostgresDBAccessIAMPolicy.managedPolicyArn,
-    });
-
-    // Output the clientID
-    new cdk.CfnOutput(this, "UserPoolClient", {
-      value: cognito_authorizer.userPoolClient.userPoolClientId,
-    });
-
-    new cdk.CfnOutput(this, "UserPoolId", {
-      value: cognito_authorizer.userPool.userPoolId
-    });
-
-    new cdk.CfnOutput(this, "UserPoolProviderURL", {
-      value: cognito_authorizer.userPool.userPoolProviderUrl
-    });
-
-    new cdk.CfnOutput(this, "EndpointURL", {
-      value: agentApi.api.url
     });
 
   }

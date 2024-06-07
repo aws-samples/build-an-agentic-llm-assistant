@@ -1,6 +1,8 @@
+import * as cdk from 'aws-cdk-lib';
 import * as apigateway from 'aws-cdk-lib/aws-apigateway';
 import * as lambda from 'aws-cdk-lib/aws-lambda';
 import * as cognito from 'aws-cdk-lib/aws-cognito';
+import * as ssm from 'aws-cdk-lib/aws-ssm';
 import { Construct } from 'constructs';
 
 interface AssistantApiConstructProps {
@@ -67,5 +69,20 @@ export class AssistantApiConstruct extends Construct {
         authorizationType: apigateway.AuthorizationType.COGNITO,
       }
     );
+
+    // Add an SSM parameter to hold Rest API URL
+    new ssm.StringParameter(
+      this,
+      "AgentAPIURLParameter",
+      {
+        parameterName: "/AgenticLLMAssistantWorkshop/agent_api",
+        stringValue: this.api.url
+      }
+    );
+
+    // stack output
+    new cdk.CfnOutput(this, "EndpointURL", {
+      value: this.api.url
+    });
   }
 }
