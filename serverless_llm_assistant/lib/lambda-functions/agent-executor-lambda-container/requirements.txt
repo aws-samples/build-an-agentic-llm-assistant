@@ -4,7 +4,7 @@ botocore>=1.31.57
 langchain==0.2.1
 langchain-aws==0.1.6
 langchain-community==0.2.1
-duckduckgo-search==6.1.2
+duckduckgo_search[lxml]==5.3.1b1
 langchain_postgres==0.0.6
 psycopg2-binary==2.9.9
 pgvector==0.2.5
