@@ -10,6 +10,7 @@ import { SageMakerRdsAccessConstruct } from './assistant-sagemaker-postgres-aces
 interface SageMakerIAMPolicyConstructProps {
   bedrockRegionParameter: ssm.StringParameter;
   llmModelIdParameter: ssm.StringParameter;
+  agentDataBucketParameter: ssm.StringParameter;
   agentLambdaNameParameter: ssm.StringParameter;
   agentDataBucket: s3.Bucket;
   agentExecutorLambda: lambda.Function;
@@ -30,8 +31,8 @@ export class SageMakerIAMPolicyConstruct extends Construct {
           resources: [
             props.bedrockRegionParameter.parameterArn,
             props.llmModelIdParameter.parameterArn,
+            props.agentDataBucketParameter.parameterArn,
             props.agentLambdaNameParameter.parameterArn,
-            props.agentDataBucket.bucketArn,
             props.sagemaker_rds_access.processingSecurityGroupIdParameter.parameterArn,
             props.sagemaker_rds_access.dbSecretArnParameter.parameterArn,
             props.sagemaker_rds_access.subnetIdsParameter.parameterArn,
