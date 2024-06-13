@@ -169,7 +169,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
 
     // Save the bucket name as an SSM parameter to simplify using it in
     // SageMaker processing jobs without having to copy the name manually.
-    new ssm.StringParameter(
+    const agentDataBucketParameter = new ssm.StringParameter(
       this,
       "AgentDataBucketParameter",
       {
@@ -184,6 +184,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     // new SageMakerIAMPolicyConstruct(this, 'SageMakerIAMPolicy', {
     //   bedrockRegionParameter: ssm_bedrock_region_parameter,
     //   llmModelIdParameter: ssm_llm_model_id_parameter,
+    //   agentDataBucketParameter: agentDataBucketParameter,
     //   agentLambdaNameParameter: agentLambdaNameParameter,
     //   agentDataBucket: agent_data_bucket,
     //   agentExecutorLambda: agent_executor_lambda,
