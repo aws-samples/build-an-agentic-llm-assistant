@@ -8,6 +8,7 @@ import * as path from "path";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import * as s3 from "aws-cdk-lib/aws-s3";
+import {  NetworkMode } from 'aws-cdk-lib/aws-ecr-assets';
 
 import { Vpc } from "./assistant-vpc";
 import { AssistantApiConstruct } from './assistant-api-gateway';
@@ -104,6 +105,13 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     );
 
     // -----------------------------------------------------------------------
+    var currentNetworkMode = NetworkMode.DEFAULT
+    // if you run the cdk stack in SageMaker editor, you need to pass --network sagemaker
+    // for docker build to work. The following achieve that.
+    if(process.env.SAGEMAKER_APP_TYPE) {
+        currentNetworkMode = NetworkMode.custom("sagemaker")
+    }
+
     // Add AWS Lambda container and function to serve as the agent executor.
     const agent_executor_lambda = new lambda.DockerImageFunction(
       this,
@@ -115,6 +123,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
             "lambda-functions/agent-executor-lambda-container"
           ),
           {
+            networkMode: currentNetworkMode,
             buildArgs: { "--platform": "linux/amd64" }
           }
         ),
