@@ -16,7 +16,24 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
       assumedBy: new iam.ServicePrincipal('sagemaker.amazonaws.com'),
       managedPolicies: [
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSageMakerFullAccess'),
+        // required to work with CDK from vscode in SageMaker
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCloudFormationFullAccess'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMReadOnlyAccess'),
       ],
+      inlinePolicies: {
+        AssumeDeployRole: new iam.PolicyDocument({
+          statements: [
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: ['sts:AssumeRole'],
+              resources: [
+                `arn:aws:iam::${this.account}:role/cdk-*-deploy-role-${this.account}-${this.region}`,
+                `arn:aws:iam::${this.account}:role/cdk-*-file-publishing-role-${this.account}-${this.region}`,
+              ],
+            }),
+          ],
+        }),
+      },
     });
 
     // Create a SageMaker Domain
@@ -28,6 +45,11 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
       subnetIds: existingDefaultVpc.publicSubnets.map(subnet => subnet.subnetId),
       defaultUserSettings: {
         executionRole: sagemakerExecutionRole.roleArn
+      },
+      domainSettings: {
+        dockerSettings: {
+          enableDockerAccess: "ENABLED"
+        }
       }
     });
 
