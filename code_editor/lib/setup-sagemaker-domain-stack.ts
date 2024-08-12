@@ -71,6 +71,7 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
               effect: iam.Effect.ALLOW,
               actions: [
                 'textract:StartDocumentAnalysis',
+                'textract:GetDocumentAnalysis'
               ],
               resources: [
                 '*'
