@@ -76,6 +76,15 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
               resources: [
                 '*'
               ],
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: [
+                'bedrock:InvokeModel'
+              ],
+              resources: [
+                '*'
+              ],
             })
           ],
         }),
