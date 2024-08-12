@@ -16,7 +16,8 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
     const base64Script = Buffer.from(script, 'utf-8').toString('base64');
 
     // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.CfnResource.html
-    const lifecycleConfigName = "setup-docker-lcc1"
+    const lifecycleConfigName = "lifecycle-config-to-setup-docker"
+    const lifecycleConfigArn = `arn:aws:sagemaker:${this.region}:${this.account}:studio-lifecycle-config/${lifecycleConfigName}`
     const lifecycleConfig = new cdk.CfnResource(this, 'DockerSetupLCC', {
       type: 'AWS::SageMaker::StudioLifecycleConfig',
       properties: {
@@ -28,9 +29,9 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
 
     // const lifecycleConfig = new sagemaker.CfnStudioLifecycleConfig(this, 'DockerSetupLCC', {
     //   studioLifecycleConfigAppType: 'CodeEditor',
-    //   studioLifecycleConfigName: 'setup-docker-lcc',
+    //   studioLifecycleConfigName: lifecycleConfigName,
     //   studioLifecycleConfigContent: base64Script
-    // })
+    // });
 
     // import existing default VPC
     const existingDefaultVpc = ec2.Vpc.fromLookup(this, 'ExistingDefaultVPC', {isDefault: true});
@@ -69,7 +70,14 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
       // Use private subnets
       subnetIds: existingDefaultVpc.publicSubnets.map(subnet => subnet.subnetId),
       defaultUserSettings: {
-        executionRole: sagemakerExecutionRole.roleArn
+        executionRole: sagemakerExecutionRole.roleArn,
+        // Attach the lifecycle config to all code editor envs and make it run by default
+        codeEditorAppSettings: {
+          defaultResourceSpec: {
+            lifecycleConfigArn: lifecycleConfigArn
+          },
+          lifecycleConfigArns: [lifecycleConfigArn]
+        }
       },
       domainSettings: {
         dockerSettings: {
@@ -78,14 +86,17 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
       }
     });
 
+    domain.addDependency(lifecycleConfig)
+
     const userProfile = new sagemaker.CfnUserProfile(this, 'DefaultUserProfile', {
       domainId: domain.attrDomainId,
       userProfileName: "default-profile"
     })
 
     // Create a space of type code editor
+    const spaceName = 'agentic-assistant-code-editor'
     const space = new sagemaker.CfnSpace(this, 'EditorSpace', {
-      spaceName: 'agentic-assistant-code-editor',
+      spaceName: spaceName,
       domainId: domain.attrDomainId,
       ownershipSettings: {
         ownerUserProfileName: userProfile.userProfileName
@@ -107,13 +118,6 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
         }
       }
     })
-
-    // attach the lifecycle configuration to the sagemaker code editor space
-    space.addPropertyOverride(
-      "SpaceSettings.CodeEditorAppSettings.DefaultResourceSpec.LifecycleConfigArn",
-      `arn:aws:sagemaker:${this.region}:${this.account}:studio-lifecycle-config/${lifecycleConfigName}`
-    )
-
     // Resources a provisioned in Parallel by CloudFormation.
     // we need this explicit dependency to avoid cases where
     // the space creation is attempted before the user profile is ready.
@@ -122,7 +126,18 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
     new cdk.CfnOutput(this, 'SageMakerDomainOutput', {
       value: domain.attrDomainArn,
       description: 'The ARN of the SageMaker Domain',
-      // exportName: 'SageMakerDomainWithCodeEditorARN',
+    });
+
+    new cdk.CfnOutput(this, 'SageMakerDomainIdOutput', {
+      value: domain.attrDomainId,
+      description: 'The ID of the SageMaker Domain',
+      key: 'SageMakerDomainID'
+    });
+
+    new cdk.CfnOutput(this, 'SpaceName', {
+      value: spaceName,
+      description: 'Space name',
+      key: 'SpaceName'
     });
 
   }
