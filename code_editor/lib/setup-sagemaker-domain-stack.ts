@@ -66,6 +66,15 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
               resources: [
                 '*'
               ],
+            }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: [
+                'textract:StartDocumentAnalysis',
+              ],
+              resources: [
+                '*'
+              ],
             })
           ],
         }),
