@@ -57,6 +57,16 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
                 `arn:aws:iam::${this.account}:role/cdk-*-file-publishing-role-${this.account}-${this.region}`,
               ],
             }),
+            new iam.PolicyStatement({
+              effect: iam.Effect.ALLOW,
+              actions: [
+                'amplify:ListApps',
+                'amplify:StartJob'
+              ],
+              resources: [
+                '*'
+              ],
+            })
           ],
         }),
       },
