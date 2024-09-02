@@ -45,6 +45,7 @@ export class SagemakerDomainWithCodeEditorStack extends cdk.Stack {
         iam.ManagedPolicy.fromAwsManagedPolicyName('AWSCloudFormationFullAccess'),
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMReadOnlyAccess'),
         iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryPowerUser'),
+        iam.ManagedPolicy.fromAwsManagedPolicyName('AWSLambda_FullAccess'),
       ],
       inlinePolicies: {
         AssumeDeployRole: new iam.PolicyDocument({
