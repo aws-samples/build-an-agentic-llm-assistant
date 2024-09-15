@@ -1,0 +1,23 @@
+
+# https://docs.aws.amazon.com/amplify/latest/userguide/deploy-nextjs-app.html
+version: 1
+frontend:
+  phases:
+    preBuild:
+      commands:
+        - cd frontend/chat-app
+        - ls -alh
+        - node -v
+        - npm -v
+        - npm ci
+    build:
+      commands:
+        - npm run build
+        - ls -alh .next
+  artifacts:
+    baseDirectory: frontend/chat-app/.next
+    files:
+      - '**/*'
+  cache:
+    paths:
+      - frontend/chat-app/node_modules/**/*
