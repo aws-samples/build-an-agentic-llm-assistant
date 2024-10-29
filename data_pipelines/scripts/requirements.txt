@@ -5,7 +5,7 @@ pandas==2.0.3
 dask==2023.5.0
 tabulate
 dask
-langchain==0.2.12
+langchain==0.3.0
 langchain-aws==0.1.16
 langchain-community==0.2.11
 psycopg2-binary==2.9.9
