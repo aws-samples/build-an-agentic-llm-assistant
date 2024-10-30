@@ -7,7 +7,7 @@ tabulate
 dask
 langchain==0.2.12
 langchain-aws==0.1.16
-langchain-community==0.2.11
+langchain-community==0.3.0
 psycopg2-binary==2.9.9
 # tiktoken is required by langchain.text_splitter.TokenTextSplitter
 tiktoken
