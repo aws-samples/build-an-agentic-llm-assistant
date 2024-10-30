@@ -1,6 +1,5 @@
-import React from 'react';
-import { TrashIcon } from '@heroicons/react/20/solid'; 
-
+import React from "react";
+import { IconTrash } from "@tabler/icons-react";
 
 interface ClearButtonProps {
   onClick: () => void;
@@ -13,7 +12,7 @@ const ClearButton: React.FC<ClearButtonProps> = ({ onClick }) => {
       onClick={onClick}
     >
       Clear Conversation
-      <TrashIcon className="w-4 h-4 mr-1" />
+      <IconTrash className="w-4 h-4 mr-1" />
     </button>
   );
 };
