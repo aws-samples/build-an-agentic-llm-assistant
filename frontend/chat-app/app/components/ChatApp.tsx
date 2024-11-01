@@ -45,7 +45,7 @@ const ChatApp: React.FC = () => {
 
     // Call the API to get the response
     const rest_api_endpoint =
-      "https://wcouh2rhm0.execute-api.us-west-2.amazonaws.com/prod/";
+      process.env["API_ENDPOINT"] ?? "";
     try {
       const response = await fetch(rest_api_endpoint, {
         // mode: "no-cors",
