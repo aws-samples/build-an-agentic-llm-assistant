@@ -1,13 +1,9 @@
 import * as amplify from '@aws-cdk/aws-amplify-alpha';
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-import * as codecommit from 'aws-cdk-lib/aws-codecommit';
 import * as ssm from 'aws-cdk-lib/aws-ssm';
-import * as lambda from 'aws-cdk-lib/aws-lambda';
-import * as apigateway from "aws-cdk-lib/aws-apigateway";
-import * as cognito from 'aws-cdk-lib/aws-cognito';
 import * as iam from 'aws-cdk-lib/aws-iam';
-import path = require('path');
+
 
 export class AmplifyChatuiStack extends cdk.Stack {
   constructor(scope: Construct, id: string, props?: cdk.StackProps) {
@@ -30,41 +26,60 @@ export class AmplifyChatuiStack extends cdk.Stack {
     );
 
     // -------------------------------------------------------------------------
+    // Setup IAM permissions for Amplify CI/CD
+    const amplify_role = new iam.Role(this, 'AmplifyRole', {
+        assumedBy: new iam.ServicePrincipal('amplify.amazonaws.com'),
+        description: 'CDK Amplify Role',
+    });
 
-    // create a new repository and initialize it with the chatui nextjs app source code.
-    // https://docs.aws.amazon.com/cdk/api/v2/docs/aws-cdk-lib.aws_codecommit-readme.html
-    const amplifyChatUICodeCommitRepo = new codecommit.Repository(this, 'NextJsGitRepository', {
-      repositoryName: 'nextjs-amplify-chatui',
-      description: 'A chatui with nextjs hosted on AWS Amplify.',
-      code: codecommit.Code.fromDirectory(path.join(__dirname, '../chat-app'), 'main')
+    // Adding the same permissions added by the process documented in the link
+    // https://docs.aws.amazon.com/amplify/latest/userguide/how-to-service-role-amplify-console.html
+    amplify_role.addManagedPolicy(iam.ManagedPolicy.fromAwsManagedPolicyName('AdministratorAccess-Amplify'));
+
+    // -------------------------------------------------------------------------
+    const AmplifyChatUIGitHubSourceCodeProvider = new amplify.GitHubSourceCodeProvider({
+      owner: "aws-samples",
+      repository: "build-an-agentic-llm-assistant",
+      oauthToken: cdk.SecretValue.secretsManager("github-access-token-for-amplify-cicd")
     });
 
     // from https://docs.aws.amazon.com/cdk/api/v2/docs/aws-amplify-alpha-readme.html
-    const amplifyChatUI = new amplify.App(this, 'AmplifyChatUI', {
+    const amplifyChatUI = new amplify.App(this, 'AmplifyNextJsChatUI', {
       autoBranchDeletion: true,
-      sourceCodeProvider: new amplify.CodeCommitSourceCodeProvider(
-        {repository: amplifyChatUICodeCommitRepo}),
+      sourceCodeProvider: AmplifyChatUIGitHubSourceCodeProvider,
       // enable server side rendering
       platform: amplify.Platform.WEB_COMPUTE,
+      role: amplify_role,
       // https://docs.aws.amazon.com/amplify/latest/userguide/environment-variables.html#amplify-console-environment-variables
       environmentVariables: {
-        // the following custom image is used to support Next.js 14, see links for details:
-        // 1. https://aws.amazon.com/blogs/mobile/6-new-aws-amplify-launches-to-make-frontend-development-easier/
-        // 2. https://github.com/aws-cloudformation/cloudformation-coverage-roadmap/issues/1299
-        '_CUSTOM_IMAGE': 'amplify:al2023',
         'AMPLIFY_USERPOOL_ID': cognito_user_pool_id_parameter,
         'COGNITO_USERPOOL_CLIENT_ID': cognito_user_pool_client_id_parameter,
-        'API_ENDPOINT': agent_api_parameter
+        'API_ENDPOINT': agent_api_parameter,
+        'AMPLIFY_DIFF_DEPLOY': 'false',
+        'AMPLIFY_MONOREPO_APP_ROOT': 'frontend/chat-app',
+        'NEXT_PUBLIC_AWS_AMPLIFY_REGION': this.region,
       }
     });
 
-    amplifyChatUI.addBranch('main', {stage: "PRODUCTION"});
+    new cdk.CfnResource(this, 'AmplifyBranch', {
+      type: 'AWS::Amplify::Branch',
+      properties: {
+        AppId: amplifyChatUI.appId,
+        BranchName: 'main',
+        Stage: 'PRODUCTION',
+        Framework: 'Next.js - SSR'
+      }
+    })
 
     // -----------------------------------------------------------------------
-    // stack outputs
+    // Stack outputs
 
     new cdk.CfnOutput(this, "AmplifyAppURL", {
       value: amplifyChatUI.defaultDomain,
+    });
+
+    new cdk.CfnOutput(this, "AppId", {
+      value: amplifyChatUI.appId
     });
 
   }
