@@ -44,8 +44,7 @@ const ChatApp: React.FC = () => {
     ]);
 
     // Call the API to get the response
-    const rest_api_endpoint =
-      process.env["API_ENDPOINT"] ?? "";
+    const rest_api_endpoint = process.env.NEXT_PUBLIC_API_ENDPOINT ?? "";
     try {
       const response = await fetch(rest_api_endpoint, {
         // mode: "no-cors",
