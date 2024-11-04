@@ -2,7 +2,7 @@
 boto3>=1.28.57
 botocore>=1.31.57
 pandas==2.0.3
-dask[dataframe]==2023.10.0
+dask[dataframe]==2024.10.0
 tabulate
 langchain==0.2.12
 langchain-aws==0.1.16

@@ -15,6 +15,7 @@ import { AssistantApiConstruct } from './assistant-api-gateway';
 import { CognitoConstruct } from './assistant-authorizer';
 import { SageMakerRdsAccessConstruct } from './assistant-sagemaker-postgres-acess';
 import { SageMakerIAMPolicyConstruct } from './assistant-sagemaker-iam-policy';
+import { SageMakerProcessor } from './assistant-sagemaker-processor';
 
 const AGENT_DB_NAME = "AgentSQLDBandVectorStore";
 
@@ -211,6 +212,8 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
       cognitoUserPool: cognito_authorizer.userPool,
       lambdaFunction: agent_executor_lambda,
     });
+
+    new SageMakerProcessor(this, "SagemakerProcessor");
 
   }
 }
