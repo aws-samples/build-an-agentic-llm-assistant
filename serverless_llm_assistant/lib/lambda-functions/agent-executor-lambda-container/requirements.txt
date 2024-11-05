@@ -10,3 +10,4 @@ psycopg2-binary==2.9.9
 pgvector==0.2.5
 beautifulsoup4==4.12.3
 sqlalchemy==2.0.30
+numexpr==2.10.0
