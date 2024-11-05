@@ -5,6 +5,7 @@ from langchain_aws import ChatBedrock
 from langchain_community.tools import DuckDuckGoSearchRun
 from .calculator import CustomCalculatorTool
 from .config import AgenticAssistantConfig
+from .rag import get_rag_chain
 
 config = AgenticAssistantConfig()
 bedrock_runtime = boto3.client("bedrock-runtime", region_name=config.bedrock_region)
@@ -13,7 +14,7 @@ claude_llm = BedrockLLM(
     model_id=config.llm_model_id,
     client=bedrock_runtime,
     model_kwargs={
-        "max_tokens": 1000,
+        "max_tokens_to_sample": 1000,
         "temperature": 0.0,
         "top_p": 0.99
     },
@@ -33,6 +34,7 @@ claude_chat_llm = ChatBedrock(
 
 search = DuckDuckGoSearchRun()
 custom_calculator = CustomCalculatorTool()
+rag_qa_chain = get_rag_chain(config, claude_llm, bedrock_runtime)
 
 LLM_AGENT_TOOLS = [
     Tool(
@@ -49,6 +51,15 @@ LLM_AGENT_TOOLS = [
         description=(
             "Use this tool when you need to perform mathematical calculations. "
             "The input to this tool should be a valid mathematical expression, such as '55/3' or '(10 + 20) * 5'."
+        ),
+    ),
+    Tool(
+        name="CompanyFinancialSemanticSearch",
+        func=lambda query: rag_qa_chain({"question": query}),
+        description=(
+            "Use this tool to search for information in companies' financial reports and documents. "
+            "For example, you can use this tool to find the revenue, net income, or other financial figures for a specific company in a given year. "
+            "The input should be a natural language question related to company financials."
         ),
     ),
 ]
