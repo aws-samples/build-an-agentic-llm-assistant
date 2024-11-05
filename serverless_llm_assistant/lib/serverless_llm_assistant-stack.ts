@@ -98,10 +98,14 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     // Create a security group to allow access to the DB from a SageMaker processing job
     // which will be used to index embedding vectors.
 
-    // const sagemaker_rds_access = new SageMakerRdsAccessConstruct(this, 'SageMakerRdsAccess', {
-    //   vpc: vpc.vpc,
-    //   rdsCluster: AgentDB,
-    // });
+    const sagemaker_rds_access = new SageMakerRdsAccessConstruct(
+      this,
+      "SageMakerRdsAccess",
+      {
+        vpc: vpc.vpc,
+        rdsCluster: AgentDB,
+      }
+    );
 
     // -----------------------------------------------------------------------
     // Add a DynamoDB table to store chat history per session id.
@@ -223,16 +227,16 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     // -----------------------------------------------------------------------
     // Create a managed IAM policy to be attached to a SageMaker execution role
     // to allow the required permissions to retrieve the information to access the database.
-    // new SageMakerIAMPolicyConstruct(this, 'SageMakerIAMPolicy', {
-    //   bedrockRegionParameter: ssm_bedrock_region_parameter,
-    //   llmModelIdParameter: ssm_llm_model_id_parameter,
-    //   agentDataBucketParameter: agentDataBucketParameter,
-    //   agentLambdaNameParameter: agentLambdaNameParameter,
-    //   agentDataBucket: agent_data_bucket,
-    //   agentExecutorLambda: agent_executor_lambda,
-    //   rdsCluster: AgentDB,
-    //   sagemaker_rds_access: sagemaker_rds_access,
-    // });
+    new SageMakerIAMPolicyConstruct(this, "SageMakerIAMPolicy", {
+      bedrockRegionParameter: ssm_bedrock_region_parameter,
+      llmModelIdParameter: ssm_llm_model_id_parameter,
+      agentDataBucketParameter: agentDataBucketParameter,
+      agentLambdaNameParameter: agentLambdaNameParameter,
+      agentDataBucket: agent_data_bucket,
+      agentExecutorLambda: agent_executor_lambda,
+      rdsCluster: AgentDB,
+      sagemaker_rds_access: sagemaker_rds_access,
+    });
 
     // -----------------------------------------------------------------------
     // Create a new Cognito user pool and add an app client to the user pool
