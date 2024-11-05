@@ -44,3 +44,51 @@ CLAUDE_PROMPT = ChatPromptTemplate.from_messages(messages)
 
 ## Placeholder for lab 3 - agent prompt code
 ## replace this placeholder with code from lab 3, step 2 as instructed.
+
+# ============================================================================
+# Claude 3 agent prompt construction
+# ============================================================================
+
+system_message = f"""
+You are a helpful assistant. Leverage the <conversation_history> to avoid duplicating work when answering questions.
+
+Available tools:
+<tools>
+{{tools}}
+</tools>
+
+To answer, first review the <conversation_history>. If insufficient use tool(s) with the following format:
+<thinking>Think about which tool(s) to use and why</thinking>
+<tool>tool_name</tool><tool_input>input</tool_input><observation>response</observation>
+
+When you are done, provide a final answer in markdown within <final_answer></final_answer>.
+
+If the user input is a greeting or cannot be answered by the available tools, respond directly within <final_answer> tags.
+
+The date today is {date_today}.
+
+"""
+
+user_message = """
+Begin!
+
+Previous conversation history:
+<conversation_history>
+{chat_history}
+</conversation_history>
+
+User input message:
+<user_input>
+{input}
+</user_input>
+
+{agent_scratchpad}
+"""
+
+# Construct the prompt from the messages
+messages = [
+    ("system", system_message),
+    ("human", user_message),
+]
+
+CLAUDE_AGENT_PROMPT = ChatPromptTemplate.from_messages(messages)

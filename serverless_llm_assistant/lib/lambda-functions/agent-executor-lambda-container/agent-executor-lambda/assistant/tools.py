@@ -1,9 +1,7 @@
-# This module will be edited in Lab 03 to add the agent tools.
 import boto3
 from langchain.agents import Tool
 from langchain_aws import BedrockLLM
 from langchain_aws import ChatBedrock
-
 from langchain_community.tools import DuckDuckGoSearchRun
 from .calculator import CustomCalculatorTool
 from .config import AgenticAssistantConfig
@@ -32,3 +30,25 @@ claude_chat_llm = ChatBedrock(
         "top_p": 0.99
     },
 )
+
+search = DuckDuckGoSearchRun()
+custom_calculator = CustomCalculatorTool()
+
+LLM_AGENT_TOOLS = [
+    Tool(
+        name="WebSearch",
+        func=search.invoke,
+        description=(
+            "Use this tool to search for information on current events, news, or general knowledge topics. "
+            "For example, you can use this tool to find information about recent news events, famous people, or common facts."
+        ),
+    ),
+    Tool(
+        name="Calculator",
+        func=custom_calculator,
+        description=(
+            "Use this tool when you need to perform mathematical calculations. "
+            "The input to this tool should be a valid mathematical expression, such as '55/3' or '(10 + 20) * 5'."
+        ),
+    ),
+]
