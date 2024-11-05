@@ -7,6 +7,7 @@ from textractor.data.constants import TextractFeatures
 import boto3
 import logging
 from botocore.exceptions import ClientError
+import requests
 import sys
 
 sys.path.append(os.path.abspath("."))

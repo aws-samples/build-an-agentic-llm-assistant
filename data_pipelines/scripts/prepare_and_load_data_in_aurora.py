@@ -3,7 +3,7 @@ import os
 from botocore.config import Config
 import boto3
 import dask.dataframe as dd
-from langchain_community.embeddings import BedrockEmbeddings
+from langchain_aws import BedrockEmbeddings
 from langchain.schema.document import Document
 from langchain.text_splitter import TokenTextSplitter
 from langchain_community.vectorstores.pgvector import PGVector
