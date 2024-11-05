@@ -26,7 +26,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     // -----------------------------------------------------------------------
     // VPC Construct
     // Create subnets and VPC endpoints
-    // const vpc = new Vpc(this, "Vpc");
+    const vpc = new Vpc(this, "Vpc");
 
     // -----------------------------------------------------------------------
     // Create relevant SSM parameters
@@ -68,6 +68,31 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     // -----------------------------------------------------------------------
     // Placeholder for Lab 4, step 2.2 - Put the database resource definition here.
 
+    // Add an Amazon Aurora PostgreSQL database with PGvector for semantic search.
+    // Create an Aurora PostgreSQL database to serve as the semantic search
+    // engine using the pgvector extension https://github.com/pgvector/pgvector
+    // https://aws.amazon.com/about-aws/whats-new/2023/07/amazon-aurora-postgresql-pgvector-vector-storage-similarity-search/
+    const AgentDBSecret = rds.Credentials.fromGeneratedSecret("AgentDBAdmin");
+
+    const AgentDB = new rds.DatabaseCluster(this, "AgentDB", {
+      engine: rds.DatabaseClusterEngine.auroraPostgres({
+        // We use this specific db version because it comes with pgvector extension.
+        version: rds.AuroraPostgresEngineVersion.VER_15_3,
+      }),
+      defaultDatabaseName: AGENT_DB_NAME,
+      storageEncrypted: true,
+      // Switch to cdk.RemovalPolicy.RETAIN when installing production
+      // to avoid accidental data deletions.
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
+      // We attach the credentials created above, to the database.
+      credentials: AgentDBSecret,
+      // Writer must be provided.
+      writer: rds.ClusterInstance.serverlessV2("ServerlessInstanceWriter"),
+      // Put the database in the vpc created above.
+      vpc: vpc.vpc,
+      // Put the database in the private subnet of the VPC.
+      vpcSubnets: { subnetType: ec2.SubnetType.PRIVATE_ISOLATED },
+    });
     // -----------------------------------------------------------------------
     // Lab 4. Step 4.1 - configure sagemaker access to the database.
     // Create a security group to allow access to the DB from a SageMaker processing job
@@ -131,17 +156,23 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
         description: "Lambda function with bedrock access created via CDK",
         timeout: cdk.Duration.minutes(5),
         memorySize: 2048,
-        // vpc: vpc.vpc,
+        vpc: vpc.vpc,
         environment: {
           BEDROCK_REGION_PARAMETER: ssm_bedrock_region_parameter.parameterName,
           LLM_MODEL_ID_PARAMETER: ssm_llm_model_id_parameter.parameterName,
           CHAT_MESSAGE_HISTORY_TABLE: ChatMessageHistoryTable.tableName,
-          // AGENT_DB_SECRET_ID: AgentDB.secret?.secretArn as string
+          AGENT_DB_SECRET_ID: AgentDB.secret?.secretArn as string,
         },
       }
     );
 
     // Placeholder Step 2.4 - grant Lambda permission to access db credentials
+
+    // Allow Lambda to read the secret for Aurora DB connection.
+    AgentDB.secret?.grantRead(agent_executor_lambda);
+
+    // Allow network access to/from Lambda
+    AgentDB.connections.allowDefaultPortFrom(agent_executor_lambda);
 
     // Allow Lambda to read SSM parameters.
     ssm_bedrock_region_parameter.grantRead(agent_executor_lambda);
