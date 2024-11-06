@@ -1,5 +1,5 @@
-import * as cdk from 'aws-cdk-lib';
-import { Construct } from 'constructs';
+import * as cdk from "aws-cdk-lib";
+import { Construct } from "constructs";
 import * as dynamodb from "aws-cdk-lib/aws-dynamodb";
 import * as ec2 from "aws-cdk-lib/aws-ec2";
 import * as iam from "aws-cdk-lib/aws-iam";
@@ -8,13 +8,14 @@ import * as path from "path";
 import * as rds from "aws-cdk-lib/aws-rds";
 import * as ssm from "aws-cdk-lib/aws-ssm";
 import * as s3 from "aws-cdk-lib/aws-s3";
-import {  NetworkMode } from 'aws-cdk-lib/aws-ecr-assets';
+import { NetworkMode } from "aws-cdk-lib/aws-ecr-assets";
 
 import { Vpc } from "./assistant-vpc";
-import { AssistantApiConstruct } from './assistant-api-gateway';
-import { CognitoConstruct } from './assistant-authorizer';
-import { SageMakerRdsAccessConstruct } from './assistant-sagemaker-postgres-acess';
-import { SageMakerIAMPolicyConstruct } from './assistant-sagemaker-iam-policy';
+import { AssistantApiConstruct } from "./assistant-api-gateway";
+import { CognitoConstruct } from "./assistant-authorizer";
+import { SageMakerRdsAccessConstruct } from "./assistant-sagemaker-postgres-acess";
+import { SageMakerIAMPolicyConstruct } from "./assistant-sagemaker-iam-policy";
+import { SageMakerProcessor } from "./assistant-sagemaker-processor";
 
 const AGENT_DB_NAME = "AgentSQLDBandVectorStore";
 
@@ -30,8 +31,8 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     // -----------------------------------------------------------------------
     // Create relevant SSM parameters
     const parameters = this.node.tryGetContext("parameters") || {
-      "bedrock_region": "us-west-2",
-      "llm_model_id": "anthropic.claude-v2"
+      bedrock_region: "us-west-2",
+      llm_model_id: "anthropic.claude-v2",
     };
 
     const BEDROCK_REGION = parameters["bedrock_region"];
@@ -100,16 +101,16 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
         // which will keep the database table when destroying the stack.
         // this avoids accidental deletion of user data.
         removalPolicy: cdk.RemovalPolicy.DESTROY,
-        encryption: dynamodb.TableEncryption.AWS_MANAGED
+        encryption: dynamodb.TableEncryption.AWS_MANAGED,
       }
     );
 
     // -----------------------------------------------------------------------
-    var currentNetworkMode = NetworkMode.DEFAULT
+    var currentNetworkMode = NetworkMode.DEFAULT;
     // if you run the cdk stack in SageMaker editor, you need to pass --network sagemaker
     // for docker build to work. The following achieve that.
-    if(process.env.SAGEMAKER_APP_TYPE) {
-        currentNetworkMode = NetworkMode.custom("sagemaker")
+    if (process.env.SAGEMAKER_APP_TYPE) {
+      currentNetworkMode = NetworkMode.custom("sagemaker");
     }
 
     // Add AWS Lambda container and function to serve as the agent executor.
@@ -124,7 +125,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
           ),
           {
             networkMode: currentNetworkMode,
-            buildArgs: { "--platform": "linux/amd64" }
+            buildArgs: { "--platform": "linux/amd64" },
           }
         ),
         description: "Lambda function with bedrock access created via CDK",
@@ -152,7 +153,7 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
 
     // Allow the Lambda function to use Bedrock
     agent_executor_lambda.role?.addManagedPolicy(
-      iam.ManagedPolicy.fromAwsManagedPolicyName('AmazonBedrockFullAccess')
+      iam.ManagedPolicy.fromAwsManagedPolicyName("AmazonBedrockFullAccess")
     );
 
     // Save the Lambda ARN in an SSM parameter to simplify invoking the lambda
@@ -161,7 +162,8 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
       this,
       "AgentLambdaNameParameter",
       {
-        parameterName: "/AgenticLLMAssistantWorkshop/AgentExecutorLambdaNameParameter",
+        parameterName:
+          "/AgenticLLMAssistantWorkshop/AgentExecutorLambdaNameParameter",
         stringValue: agent_executor_lambda.functionName,
       }
     );
@@ -204,13 +206,14 @@ export class ServerlessLlmAssistantStack extends cdk.Stack {
     // -----------------------------------------------------------------------
     // Create a new Cognito user pool and add an app client to the user pool
 
-    const cognito_authorizer = new CognitoConstruct(this, 'Cognito');
+    const cognito_authorizer = new CognitoConstruct(this, "Cognito");
     // -------------------------------------------------------------------------
     // Add an Amazon API Gateway with AWS cognito auth and an AWS lambda as a backend
-    new AssistantApiConstruct(this, 'AgentApi', {
+    new AssistantApiConstruct(this, "AgentApi", {
       cognitoUserPool: cognito_authorizer.userPool,
       lambdaFunction: agent_executor_lambda,
     });
 
+    new SageMakerProcessor(this, "SagemakerProcessor");
   }
 }

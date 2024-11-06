@@ -25,7 +25,7 @@ claude_llm = BedrockLLM(
     model_id=config.llm_model_id,
     client=bedrock_runtime,
     model_kwargs={
-        "max_tokens": 1000,
+        "max_tokens_to_sample": 1000,
         "temperature": 0.0,
         "top_p": 0.99
     },
