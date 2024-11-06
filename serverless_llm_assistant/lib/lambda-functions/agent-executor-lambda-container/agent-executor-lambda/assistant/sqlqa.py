@@ -113,7 +113,7 @@ def get_sql_qa_tool(user_question, text_to_sql_chain, initial_context=""):
     except Exception as e:
         result = (
             f"Failed to run the SQL query {sql_query} with error {e}"
-            " Appologize, ask the user for further specifications,"
+            " Apologize, ask the user for further specifications,"
             " or to try again later."
         )
 
