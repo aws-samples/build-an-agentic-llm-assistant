@@ -6,6 +6,7 @@ from langchain_community.tools import DuckDuckGoSearchRun
 from .calculator import CustomCalculatorTool
 from .config import AgenticAssistantConfig
 from .rag import get_rag_chain
+from .sqlqa import get_sql_qa_tool, get_text_to_sql_chain
 
 config = AgenticAssistantConfig()
 bedrock_runtime = boto3.client("bedrock-runtime", region_name=config.bedrock_region)
@@ -35,6 +36,7 @@ claude_chat_llm = ChatBedrock(
 search = DuckDuckGoSearchRun()
 custom_calculator = CustomCalculatorTool()
 rag_qa_chain = get_rag_chain(config, claude_llm, bedrock_runtime)
+text_to_sql_chain = get_text_to_sql_chain(config, claude_llm)
 
 LLM_AGENT_TOOLS = [
     Tool(
@@ -62,4 +64,15 @@ LLM_AGENT_TOOLS = [
             "The input should be a natural language question related to company financials."
         ),
     ),
+    Tool(
+        name="AnalyticsQA",
+        func=lambda question: get_sql_qa_tool(question, text_to_sql_chain),
+        description=(
+            "Use this tool to perform analytical queries and calculations on financial data."
+            " This tool is suitable for questions that require aggregating, filtering, or performing operations on financial data across multiple years or dimensions."
+            " For example, you can use this tool to calculate the maximum revenue, average net income, or percentage change in revenue over a period of time, "
+            " or to find years or companies that meet certain financial criteria. "
+            "The input should be a natural language question related to analyzing or manipulating financial data."
+        ),
+    )
 ]
