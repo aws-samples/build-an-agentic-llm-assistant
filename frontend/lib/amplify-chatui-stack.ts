@@ -40,7 +40,7 @@ export class AmplifyChatuiStack extends cdk.Stack {
     });
 
     // from https://docs.aws.amazon.com/cdk/api/v2/docs/aws-amplify-alpha-readme.html
-    const amplifyChatUI = new amplify.App(this, 'AmplifyChatUI', {
+    const amplifyChatUI = new amplify.App(this, 'AmplifyNextJsChatUI', {
       autoBranchDeletion: true,
       sourceCodeProvider: new amplify.CodeCommitSourceCodeProvider(
         {repository: amplifyChatUICodeCommitRepo}),
