@@ -1,17 +1,16 @@
 import logging
 import traceback
-
 import boto3
-from langchain.chains import ConversationChain
-from langchain_aws import BedrockLLM
-from langchain_aws import ChatBedrock
-from langchain.memory import ConversationBufferMemory
-from langchain_community.chat_message_histories import DynamoDBChatMessageHistory
+
+from strands import Agent
+from strands.models import BedrockModel
 
 from assistant.config import AgenticAssistantConfig
-from assistant.prompts import CLAUDE_PROMPT
+from assistant.memory import StrandsDynamoDBMemory
+from assistant.prompts import BASIC_SYSTEM_PROMPT, AGENTIC_SYSTEM_PROMPT
+from assistant.tools import get_strands_tools
 from assistant.utils import parse_markdown_content
-## placeholder for lab 3, step 4.2, replace this with imports as instructed
+## Lab 3, step 4.2: Import Strands tools here when implementing agentic mode
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -19,96 +18,109 @@ logger.setLevel(logging.INFO)
 ssm = boto3.client("ssm")
 config = AgenticAssistantConfig()
 
-bedrock_runtime = boto3.client("bedrock-runtime", region_name=config.bedrock_region)
-
-claude_llm = BedrockLLM(
-    model_id=config.llm_model_id,
-    client=bedrock_runtime,
-    model_kwargs={
-        "max_tokens_to_sample": 1000,
-        "temperature": 0.0,
-        "top_p": 0.99
-    },
-)
-
-claude_chat_llm = ChatBedrock(
-    # model_id=config.llm_model_id,
-    # transitioning to claude 3 with messages API
-    model_id="anthropic.claude-3-haiku-20240307-v1:0",
-    client=bedrock_runtime,
-    model_kwargs={
-        "max_tokens": 1000,
-        "temperature": 0.0,
-        "top_p": 0.99
-    },
-)
-
-
-def get_basic_chatbot_conversation_chain(
-    user_input, session_id, clean_history, verbose=True
-):
-    message_history = DynamoDBChatMessageHistory(
-        table_name=config.chat_message_history_table_name, session_id=session_id
+def get_bedrock_model():
+    """Initialize Bedrock model for Strands."""
+    return BedrockModel(
+        model_id=config.llm_model_id,
+        region_name=config.bedrock_region,
+        model_kwargs={
+            "max_tokens": 1000,
+            "temperature": 0.0,
+            "top_p": 0.99
+        }
     )
 
-    if clean_history:
-        message_history.clear()
-
-    memory = ConversationBufferMemory(
-        memory_key="history",
-        chat_memory=message_history,
-        # Change the human_prefix from Human to something else
-        # to not conflict with Human keyword in Anthropic Claude model.
-        human_prefix="Hu",
-        return_messages=False
+def get_basic_chatbot_agent(session_id, clean_history):
+    """Create basic chatbot using Strands Agent."""
+    model = get_bedrock_model()
+    
+    # Initialize memory
+    memory = StrandsDynamoDBMemory(
+        table_name=config.chat_message_history_table_name,
+        session_id=session_id,
+        clean_history=clean_history
     )
-
-    conversation_chain = ConversationChain(
-        prompt=CLAUDE_PROMPT, llm=claude_chat_llm, verbose=verbose, memory=memory
+    
+    agent = Agent(
+        model=model,
+        callback_handler=None,  # Disable console output for Lambda
+        system_prompt=BASIC_SYSTEM_PROMPT
     )
+    
+    return agent, memory
 
-    return conversation_chain
-
-
-## placeholder for lab 3, step 4.3, replace this with the get_agentic_chatbot_conversation_chain helper.
-
+## Lab 3, step 4.3: Replace this placeholder with the get_agentic_chatbot_agent helper.
+def get_agentic_chatbot_agent(session_id, clean_history):
+    """Create agentic chatbot with tools using Strands Agent."""
+    model = get_bedrock_model()
+    
+    # Initialize memory
+    memory = StrandsDynamoDBMemory(
+        table_name=config.chat_message_history_table_name,
+        session_id=session_id,
+        clean_history=clean_history
+    )
+    
+    # Get all tools
+    tools = get_strands_tools()
+    
+    agent = Agent(
+        model=model,
+        tools=tools,
+        callback_handler=None,
+        system_prompt=AGENTIC_SYSTEM_PROMPT
+    )
+    
+    return agent, memory
 
 def lambda_handler(event, context):
     logger.info(event)
+    
     user_input = event["user_input"]
     session_id = event["session_id"]
     chatbot_type = event.get("chatbot_type", "basic")
-    chatbot_types = ["basic", "agentic"]
     clean_history = event.get("clean_history", False)
-
-    if chatbot_type == "basic":
-        conversation_chain = get_basic_chatbot_conversation_chain(
-            user_input, session_id, clean_history
-        ).predict
-    elif chatbot_type == "agentic":
-        return {
-            "statusCode": 200,
-            "response": (
-                f"The agentic mode is not supported yet. Extend the code as instructed"
-                " in lab 3 to add it."
-            ),
-        }
-    else:
-        return {
-            "statusCode": 200,
-            "response": (
-                f"The chatbot_type {chatbot_type} is not supported."
-                f" Please use one of the following types: {chatbot_types}"
-            ),
-        }
-
+    
     try:
-        response = conversation_chain(input=user_input)
+        if chatbot_type == "basic":
+            agent, memory = get_basic_chatbot_agent(session_id, clean_history)
+            
+        elif chatbot_type == "agentic":
+            agent, memory = get_agentic_chatbot_agent(session_id, clean_history)
+            
+        else:
+            return {
+                "statusCode": 400,
+                "response": f"Unsupported chatbot_type: {chatbot_type}. Use 'basic' or 'agentic'."
+            }
+        
+        # Add conversation history to context
+        history = memory.get_conversation_history()
+        if history:
+            full_input = f"Previous conversation:\n{history}\n\nHuman: {user_input}\n\nAssistant:"
+        else:
+            full_input = f"Human: {user_input}\n\nAssistant:"
+            
+        # Get response from agent - Strands handles the entire agent loop automatically
+        result = agent(full_input)
+        response = str(result.message)
+        
+        # Parse markdown content (preserve existing utility)
         response = parse_markdown_content(response)
-    except Exception:
-        response = (
-            "Unable to respond due to an internal issue." " Please try again later"
-        )
-        print(traceback.format_exc())
-
-    return {"statusCode": 200, "response": response}
+        
+        # Save conversation to memory
+        memory.save_conversation(user_input, response)
+        
+        return {
+            "statusCode": 200,
+            "response": response,
+            "metrics": result.metrics.get_summary() if hasattr(result, 'metrics') else {}
+        }
+        
+    except Exception as e:
+        logger.error(f"Error processing request: {str(e)}")
+        logger.error(traceback.format_exc())
+        return {
+            "statusCode": 500,
+            "response": "Unable to respond due to an internal issue. Please try again later."
+        }

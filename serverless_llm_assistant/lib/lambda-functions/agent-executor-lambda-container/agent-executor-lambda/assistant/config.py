@@ -3,8 +3,6 @@ import os
 from dataclasses import dataclass
 
 import boto3
-from langchain_community.vectorstores import PGVector
-from langchain_community.utilities import SQLDatabase
 import sqlalchemy
 
 ssm = boto3.client("ssm")
@@ -32,14 +30,8 @@ class AgenticAssistantConfig:
         )["SecretString"]
         _db_secret = json.loads(_db_secret_string)
 
-        postgres_connection_string: str = PGVector.connection_string_from_db_params(
-            driver="psycopg2",
-            host=_db_secret["host"],
-            port=_db_secret["port"],
-            database=_db_secret["dbname"],
-            user=_db_secret["username"],
-            password=_db_secret["password"],
-        )
+        # PostgreSQL connection string for Labs 4 & 5 (RAG and SQL)
+        postgres_connection_string: str = f"postgresql+psycopg2://{_db_secret['username']}:{_db_secret['password']}@{_db_secret['host']}:{_db_secret['port']}/{_db_secret['dbname']}"
 
         collection_name: str = "agentic_assistant_vector_store"
         embedding_model_id: str = "amazon.titan-embed-text-v1"
@@ -57,19 +49,21 @@ class AgenticAssistantConfig:
 
         sql_engine = sqlalchemy.create_engine(sqlalchemy_connection_url)
 
-        try:
-            entities_db = SQLDatabase(
-                engine=sql_engine,
-                include_tables=SQL_TABLE_NAMES,
-                sample_rows_in_table_info=num_sql_table_sample_rows,
-            )
-        except ValueError as e:
-            if "include_tables" in str(e):
-                print(f"Warning: Table {SQL_TABLE_NAMES[0]} not found in the database. Proceeding without including this table.")
-                entities_db = SQLDatabase(
-                    engine=sql_engine,
-                    include_tables=[],  # Include all tables
-                    sample_rows_in_table_info=num_sql_table_sample_rows,
-                )
-            else:
-                raise e
+        # Lab 5 - SQL Database setup (placeholder)
+        # TODO: Add SQL database setup in Lab 5
+        # try:
+        #     entities_db = SQLDatabase(
+        #         engine=sql_engine,
+        #         include_tables=SQL_TABLE_NAMES,
+        #         sample_rows_in_table_info=num_sql_table_sample_rows,
+        #     )
+        # except ValueError as e:
+        #     if "include_tables" in str(e):
+        #         print(f"Warning: Table {SQL_TABLE_NAMES[0]} not found in the database. Proceeding without including this table.")
+        #         entities_db = SQLDatabase(
+        #             engine=sql_engine,
+        #             include_tables=[],  # Include all tables
+        #             sample_rows_in_table_info=num_sql_table_sample_rows,
+        #         )
+        #     else:
+        #         raise e
